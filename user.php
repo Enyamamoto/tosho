@@ -7,13 +7,19 @@ function h($f){
     return htmlspecialchars($f,ENT_QUOTES,'UTF-8');
 }
 
+if ($_SESSION['name'] == "" || !isset($_SESSION['name'])){
+
+    header('Location:login.php');
+    exit();
+}
+
 
 
 $sqls = sprintf('SELECT * FROM rental_logs inner join books on rental_logs.book_id = books.id WHERE rental_logs.borrower_id = %d ORDER BY rental_logs.modified DESC',
     mysqli_real_escape_string($db,$_REQUEST['id']));
 $posts = mysqli_query($db,$sqls) or die(mysqli_error($db));
 
-$sql = sprintf('SELECT distinct books.title FROM books inner join rental_logs on books.id = rental_logs.book_id WHERE books.status = 1 AND rental_logs.date_of_return <= NOW()');
+$sql = sprintf('SELECT distinct books.title,books.id FROM books inner join rental_logs on books.id = rental_logs.book_id WHERE books.status = 1 AND rental_logs.date_of_return <= NOW()');
 $datas = mysqli_query($db,$sql) or die(mysqli_error($db));
 
 ?>
@@ -187,8 +193,13 @@ $datas = mysqli_query($db,$sql) or die(mysqli_error($db));
                             <h2>The book list which you con borrow.</h2>
                             <div>
                                 <?php while($data = mysqli_fetch_array($datas)):?>
+                                <form action="thanks.php?id=<?php echo $_REQUEST['id'];?>&book_id=<?php echo $data['id'];?>" method="post">
                                     <p>
                                     Title:<?php echo h($data['title']) ;?>
+                                    </p>
+            
+                                    <input type="submit" class="btn btn-primary" name="submit" value="Request">
+                                </form>
                                     <hr style="border:dotted;color:black;">
                                     </p>
                                 <?php endwhile ;?>

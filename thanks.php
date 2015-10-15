@@ -1,48 +1,28 @@
 <?php
+session_start();
 require('dbconnect.php');
 
-session_start();
-
+//htmlspecialcharsを何度も使うので、関数にしてコードをすっきりさせる。
 function h($f){
-    return htmlspecialchars($f,ENT_QUOTES,'utf-8');
+    return htmlspecialchars($f,ENT_QUOTES,'UTF-8');
 }
 
-if(!empty($_POST)){
-    //ログイン処理
-    //変数の内容が空文字だったら、issetの場合は変数自体があるかどうか
-    if($_POST['name'] != ''){
-        //sprintf()は引数をフォーマットしてから出力します。第1引数で指定したフォーマット文字列のフォーマット部分（指定子で指定する）に第2引数（以降）で指定した値を当てはめて出力します。
-        $sql = sprintf('SELECT * FROM users WHERE name="%s"',
-            mysqli_real_escape_string($db,$_POST['name']));
-
-        $record = mysqli_query($db,$sql) or die(mysqli_error($db));
-        if($table = mysqli_fetch_array($record)){
-            //ログイン成功
-            $_SESSION['name'] = $table['name'];
-            
-            if ($table['user_type'] == 1) {
-
-            $url = "user.php?id=".$table['id'];
-            header('Location:'.$url);
-            exit();
-
-            }else{
-
-            $url = "staff.php?id=".$table['id'];
-            header('Location:'.$url);
-            exit();
-            
-            }
-
-        }else{
-            $error['login'] = 'failed';
-            
-        }
-    }else{
-        $error['login'] = 'blank';
-        
-    }
+if(isset($_REQUEST['book_id'])){
+    $sql = sprintf('SELECT * FROM books WHERE id=%d',
+        mysqli_real_escape_string($db,$_REQUEST['book_id']));
+    $record = mysqli_query($db,$sql) or die(mysqli_error($db));
+    $table = mysqli_fetch_array($record);
 }
+
+$sql = sprintf("INSERT INTO `requests` (`user_id`,`book_id`,`created`,`modified`)VALUES ('%d','%d',NOW(),NOW())",
+            mysqli_real_escape_string($db,$_GET['id']),
+            mysqli_real_escape_string($db,$_GET['book_id'])
+            );
+
+mysqli_query($db,$sql) or die(mysqli_error($db));
+
+
+
 ?>
 
 <!DOCTYPE html>
@@ -128,38 +108,12 @@ if(!empty($_POST)){
 
     <!-- About Section -->
     <section id="about" class="container content-section text-center">
-        <div class="row">
-            <div class="col-lg-8 col-lg-offset-2">
-                <h2>Login</h2>
-                <form action="" method="post" role="form">
-                <div class="form-group">
-                <div>
-                    <p>Please enter your name.</p>
-                    <p>If you have not added your name,please add your name.</p>
-                    <p>&raquo;<a href="add.php">Add new member.</a></p>
-                </div>
-                <!-- アクションが空だから、このファイルの冒頭にphpを記入する -->
-                    <dl>
-                        <dt>Name</dt>
-                        <dd>
-                            <input type="text" name="name" size="35" maxlengh="255" value="<?php if(isset($_POST['name'])){echo h($_POST['name']);} ?>">
-                            <?php 
-                            if(isset($error['login'])){
-                                if($error['login'] == 'blank'){
-                                echo "<p>".'※Please enter your name.'."</p>";
-                                }elseif($error['login'] == 'failed'){
-                                echo "<p>".'※You failed to login.Please enter correctly.'."</p>";
-                                }
-                            }
-                            ?>
-                        </dd>
-                    </dl>
-                    <div><input type="submit" class="btn btn-primary" value="Login"></div>
-                </div>
-                </form>
-            </div>
-        </div>
+        <h1 style="color:blue;">Title:<?php echo $table['title']?></h1>
+        <h1>Your request was transmitted!!</h1>
+        <h2>Thank you!!</h2>
+        <button id="close" type="button" class="btn btn-primary" onclick="location.href='user.php?id=<?php echo $_REQUEST['id'];?>'">Back</button>
     </section>
+
 
     <!-- Download Section -->
     <!-- <section id="download" class="content-section text-center">

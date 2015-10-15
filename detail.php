@@ -7,6 +7,12 @@ function h($f){
     return htmlspecialchars($f,ENT_QUOTES,'UTF-8');
 }
 
+if ($_SESSION['name'] == "" || !isset($_SESSION['name'])){
+
+    header('Location:login.php');
+    exit();
+}
+
 if(isset($_REQUEST['book_id'])){
     $sql = sprintf('SELECT * FROM books WHERE id=%d',
         mysqli_real_escape_string($db,$_REQUEST['book_id']));
@@ -218,6 +224,8 @@ if (!empty($_POST)){
                                             
                                         </div>
                                 </form>
+                            <div>
+                            <button id="close" type="button" class="btn btn-primary" onclick="location.href='staff.php?id=<?php echo $_REQUEST['id'];?>'">Back</button>
                         </div>
                     </div>
                 </div>

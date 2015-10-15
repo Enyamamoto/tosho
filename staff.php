@@ -7,6 +7,12 @@ function h($f){
     return htmlspecialchars($f,ENT_QUOTES,'UTF-8');
 }
 
+if ($_SESSION['name'] == "" || !isset($_SESSION['name'])){
+
+    header('Location:login.php');
+    exit();
+}
+
 $sq = sprintf('SELECT * FROM books WHERE status = 3 ORDER BY created DESC');
 $books = mysqli_query($db,$sq) or die(mysqli_error($db));
 
@@ -49,28 +55,27 @@ if (!empty($_POST)){
 
     
     if(empty($error)){
+        if(!empty($_POST['title'])){
+        //投稿内容をインサート
+        $sql = sprintf("INSERT INTO `books` (`user_id`,`title`,`category_id`,`book_code`,`auther`,`price`,`status`,`created`,`modified`)VALUES ('%d','%s','%d','%s','%s','%s','%d',NOW(),NOW())",
+            mysqli_real_escape_string($db,$_REQUEST['id']),
+            mysqli_real_escape_string($db,$_POST['title']),
+            mysqli_real_escape_string($db,$_POST['category_id']),
+            mysqli_real_escape_string($db,$_POST['book_code']),
+            mysqli_real_escape_string($db,$_POST['auther']),
+            mysqli_real_escape_string($db,$_POST['price']),
+            mysqli_real_escape_string($db,$_POST['status'])
+            );
 
-    //投稿内容をインサート
-    $sql = sprintf("INSERT INTO `books` (`user_id`,`title`,`category_id`,`book_code`,`auther`,`price`,`status`,`created`,`modified`)VALUES ('%d','%s','%d','%s','%s','%s','%d',NOW(),NOW())",
-        mysqli_real_escape_string($db,$_REQUEST['id']),
-        mysqli_real_escape_string($db,$_POST['title']),
-        mysqli_real_escape_string($db,$_POST['category_id']),
-        mysqli_real_escape_string($db,$_POST['book_code']),
-        mysqli_real_escape_string($db,$_POST['auther']),
-        mysqli_real_escape_string($db,$_POST['price']),
-        mysqli_real_escape_string($db,$_POST['status'])
-        );
+        mysqli_query($db,$sql) or die(mysqli_error($db));
 
-    mysqli_query($db,$sql) or die(mysqli_error($db));
-
-    $url = "staff.php?id=".$_REQUEST['id'];
-    header('Location:'.$url);
-    exit();
+        $url = "staff.php?id=".$_REQUEST['id'];
+        header('Location:'.$url);
+        exit();
+        }
     }
 
 }
-
-
 
 ?>
 
@@ -168,7 +173,7 @@ if (!empty($_POST)){
                         <img src="img/dokusho.jpg" class="img-responsive" alt="">
                     </a>
                     <div class="portfolio-caption">
-                        <h4>The corrent book list.</h4>
+                        <h4>The current book list.</h4>
                         <!-- <p class="text-muted">Graphic Design</p> -->
                     </div>
                 </div>
@@ -187,7 +192,7 @@ if (!empty($_POST)){
                     </div>
                 </div>
                 <div class="col-md-4 col-sm-6 portfolio-item">
-                    <a href="#portfolioModal3" class="portfolio-link" data-toggle="modal">
+                    <a href="rental.php?id=<?php echo $_REQUEST['id'] ;?>" class="portfolio-link" data-toggle="modal">
                         <div class="portfolio-hover">
                             <div class="portfolio-hover-content">
                                 <i class="fa fa-plus fa-3x"></i>
@@ -196,7 +201,7 @@ if (!empty($_POST)){
                         <img src="img/library.jpg" class="img-responsive" alt="">
                     </a>
                     <div class="portfolio-caption">
-                        <h4>Rending a book.</h4>
+                        <h4>Lending a book.</h4>
                         <!-- <p class="text-muted">Website Design</p> -->
                     </div>
                 </div>
@@ -223,7 +228,7 @@ if (!empty($_POST)){
                     <div class="col-lg-8 col-lg-offset-2">
                         <div class="modal-body">
                             <!-- Project Details Go Here -->
-                            <h2>Rental is possible.</h2>
+                            <h2 style="color:blue;">Rental is possible.</h2>
                             <div>
                                 <?php while($data = mysqli_fetch_array($datas)):?>
                                     <p>
@@ -249,7 +254,7 @@ if (!empty($_POST)){
                                 <?php endif ;?>
                             </div>
 
-                            <h2 style="color:blue;">Delivering books.</h2>
+                            <h2>Delivering books.</h2>
                             <div>
                                 <?php if (isset($books)) :?>
                                 <?php while($book = mysqli_fetch_array($books)):?>
@@ -364,106 +369,6 @@ if (!empty($_POST)){
                                 </form>
                             <div>
                             <button id="close" type="button" class="btn btn-primary" data-dismiss="modal"><i class="fa fa-times"></i>Close</button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="portfolio-modal modal fade" id="portfolioModal3" tabindex="-1" role="dialog" aria-hidden="true">
-        <div class="modal-content">
-            <div class="close-modal" data-dismiss="modal">
-                <div class="lr">
-                    <div class="rl">
-                    </div>
-                </div>
-            </div>
-            <div class="container">
-                <div class="row">
-                    <div class="col-lg-8 col-lg-offset-2">
-                        <div class="modal-body">
-                            <form action="" method="post" role="form">
-                                    <h1>Rental book.</h1>
-                                    <dl>
-                                    <div class="form-group">
-                                        <dt>Title<span class="red">※Require</span></dt>
-                                            <dd>
-                                                <input type="text" name="title" class="form-control" value="">
-                                                <?php if (isset($error['title'])):?>
-                                                <p class="red">※Please enter the book's title</p>
-                                                <?php endif ;?>
-                                            </dd>
-                                    </div>
-                                    <div class="form-group">
-                                        <dt>Category<span class="red">※Require</span></dt>
-                                            <dd>
-                                                <select name = "category_id">
-                                                    <option value="1">英語学習</option>
-                                                    <option value="2">ビジネス書</option>
-                                                    <option value="3">プログラミング書</option>
-                                                    <option value="4">小説・その他</option>
-                                                </select>
-                                            </dd>
-                                    </div>
-
-                                    <div class="form-group">
-                                        <dt>Book Code<span class="red">※Require</span></dt>
-                                            <dd>
-                                                <input type="text" name="book_code" class="form-control" value="">
-                                                <?php
-                                                if(isset($error['book_code'])){
-                                                    if($error['book_code'] == 'blank'){
-                                                    echo '<p class="red">'.'※Please enter the book code.'."</p>";
-                                                    }
-                                                }?>
-                                                <?php if (isset($error['book_code'])):?>
-                                                <?php if ($error['book_code'] == 'duplicate'):?>
-                                                <p class="red">※Sorry,this book code entered is already in use.</p>
-                                                <?php endif ;?>
-                                                <?php endif ;?>
-                                            </dd>
-                                    </div>
-                                    <div class="form-group">
-                                        <dt>Auther<span class="red">※Require</span></dt>
-                                            <dd>
-                                                <input type="text" name="auther" class="form-control" value="">
-                                                <?php
-                                                if(isset($error['auther'])){
-                                                    if($error['auther'] == 'blank'){
-                                                    echo '<p class="red">'.'※Please enter the auther.'."</p>";
-                                                    }
-                                                }?>
-                                            </dd>
-                                    </div>
-                                    <div class="form-group">
-                                        <dt>Price</dt>
-                                            <dd>
-                                                <input type="text" name="price" class="form-control" value="">
-                                            </dd>
-                                    </div>
-                                    <div class="form-group">
-                                        <dt>Status</dt>
-                                            <dd>
-                                                <select name = "status">
-                                                    <option value="1">在庫</option>
-                                                    <option value="2">紛失</option>
-                                                    <option value="3">配送中</option>
-                                                </select>
-                                            </dd>
-                                        </dl>
-                                    </div>
-
-                                    </dl>
-                                        <div>
-                                            
-                                            <input type="submit" class="btn btn-primary" value="Add new book">
-                                            
-                                        </div>
-                                </form>
-                            <div>
-                            <button type="button" class="btn btn-primary" data-dismiss="modal"><i class="fa fa-times"></i> Close Project</button>
                             </div>
                         </div>
                     </div>
